@@ -1,0 +1,131 @@
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#解决方式及目的描述 
+
+#问题现象及原因： 
+    在虚拟机迁移时发现nova computer.log 日志下报错，迁移失败的原因为不能迁移到UUID 相同的主机。
+ 问题解决方案：
+     思路1 ， 更改主板的硬件UUID 
+     思路2 ，更改libvirt手工设置主机uuid值以区另两台主机。
+     思路1涉及硬件厂商 ，虽然复杂，但可从底层完全匹配，并为日后的机房或数据中心硬件运维打好基础，保障监控及资产信息的唯一性。
+     思路2 可做为openstack 环境迁移的排除故障的手段使用 ，但建议做好纪录维护工作。
+     具体步骤：
+     1）检查硬件主板UUID 
+       [root@nn1 ~]# dmidecode -s system-uuid 
+		03000200-0400-0500-0006-000700080009
+
+		[root@nn1 ~]# virsh sysinfo | grep uuid
+    	<entry name='uuid'>03000200-0400-0500-0006-000700080009</entry>
+
+     2) 检查虚拟化libvirt 设置的UUID
+		[root@nn1 ~]#  virsh capabilities | grep uuid
+    	<uuid>00020003-0004-0005-0006-000700080009</uuid>
+     以上在各个节点信息一致，表明各节点使用了相同的UUID ， 需要在每台物理节点变更UUID值（上面不能有正在运行的虚拟机），并重新启动libvirtd 进程以生效 。
+
+		步骤：
+	1）  ps 命令确认1230版本libvirtd 配置文件地址（ 因为1230版本libvirt 没有采用centos 默认配置文件路径，首次我未确认，直接更改centos 默认路径的/etc/libvirt/libvirtd.conf 配置文件，发现没有生效。)
+
+		[root@cc ~]# ps -ef | grep libvirtd
+		root     11982     1  0 21:59 ?        00:00:00 libvirtd --daemon --config /usr/local/libvirt/etc/libvirt/libvirtd.conf --listen
+		root     26979 14427  0 22:07 pts/1    00:00:00 grep libvirtd
+
+	2） 确认配置文件路径libvirtd 使用/usr/local/libvirt/etc/libvirt/libvirtd.conf ，使用如下命令更改配置文件
+
+		sed -i '/^host_uuid/d'  /usr/local/libvirt/etc/libvirt/libvirtd.conf  &&  sed  '/^#host/a\host_uuid = "'`uuidgen`'” '  /usr/local/libvirt/etc/libvirt/libvirtd.conf 
+
+	3） 重启libvirtd 进程以后生效
+
+	    /etc/init.d/libvirtd restart
+     
+        过程中提示报错，建议可先删除以下提示文件后重新启动进程 
+
+		Starting libvirtd daemon:                                  [  OK  ]
+		ln: creating symbolic link `/var/run/libvirt/libvirt-sock-ro': File exists
+		ln: creating symbolic link `/var/run/libvirt/libvirt-sock': File exists
+		You have new mail in /var/spool/mail/root
+	 
+}
+!EOF!
+
+
+#  下面开始正式脚本文件
+set –x    #任何参数都会显示
+set -e    # 执行结果不是true则应该退出。
+#set -o verbose #打印读入shell的输入行。
+set -o xtrace  #执行命令之前打印命令
+temp_dir=`mktemp`; rm -rf $temp_dir; mkdir -p $temp_dir    # 创建随机名称的临时文件路径
+TOPDIR=$(cd $(dirname "$0") && pwd)                        # 设定相对目录为当前文件夹上级目录 
+
+
+# 第一步骤检查所有主机节点的uuid 值是否相同, 此脚本默认在1230 版本头节点执行，所以SSH 无密码登陆已经建立，不需要再次设置，此脚本不再说明
+
+function checkuuid {
+	# 预设主机为本次更改uuid 的目标主机 ， 如环境较大，可使用单独的文件来创建host list; 
+	echo "请确认哪些物理主机是需要检查UUID的主机，将IP放置在单一文件中，在以下脚本执行提示中输入文件的绝对路径,脚本执行完毕后的结果将显示在脚本相同目录下的uuidlist文件中"
+	read -p "Please enter Absolute Path that file of your host ip list : " hostip
+	touch $TOPDIR/uuidlist
+	for hostip in `cat $hostip` 
+do
+	ssh root@$hostip  hostname >> $TOPDIR/uuidlist  ;
+	ip add | grep inet | grep brd >> $TOPDIR/uuidlist  ;
+	virsh sysinfo | grep uuid  | awk -F \> '{print $2 }' | awk -F \< '{print $1}' >> $TOPDIR/uuidlist ;
+	virsh capabilities | grep uuid | awk -F \> '{print $2 }' | awk -F \< '{print $1}' >> $TOPDIR/uuidlist 
+done
+
+}
+
+checkuuid
+
+
+function changeuuid {
+echo "检查好原先的UUID表后，请确认哪些物理主机是需要更改UUID的主机，将IP放置在单一文件中，在以下提示中输入文件的绝对路径,脚本执行完毕后更改后的结果将显示在脚本相同目录下的changeduuidlist文件中"
+read -p "Please enter Absolute Path that file of your want to change uuid\'s host ip list : " uuidchangip
+touch  $TOPDIR/changeduuidlist
+	for uuidcip in `cat $uuidchangip`
+do 
+	ssh root@$uuidcip sed -i '/^host_uuid/d' /usr/local/libvirt/etc/libvirt/libvirtd.conf ;
+	sed -i '/^#host/a\host_uuid = "'`uuidgen`'"' /usr/local/libvirt/etc/libvirt/libvirtd.conf ;
+    virsh list > $temp_dir/vmlist
+    
+	if grep instance $temp_dir/vmlist 
+		stopvm
+		rebootlibvirtd
+		then
+		rebootlibvirtd
+	fi
+	hostname >> $TOPDIR/changeduuidlist  ;
+	ip add | grep inet | grep brd >> $TOPDIR/changeduuidlist  ;
+	virsh sysinfo | grep uuid  | awk -F \> '{print $2 }' | awk -F \< '{print $1}' >> $TOPDIR/changeduuidlist ;
+	virsh capabilities | grep uuid | awk -F \> '{print $2 }' | awk -F \< '{print $1}' >> $TOPDIR/changeduuidlist  
+done 
+echo "现在UUID 已经更改，我们将使用diff 语句来确认原先的UUID 与已经更改过的UUID 对比，此两文件的纪录已经保存在脚本相同目录下的uuidlist 与changeduuidlist 文件下，建议您留为备份，以在需要时查看"
+ sleep 2
+ diff -y $TOPDIR/uuidlist $TOPDIR/changeduuidlist |more 
+}
+
+
+function stopvm {
+	virsh list > $temp_dir/list 
+	for i in `cat $temp_dir/list `; do virsh destroy $i ; done
+}
+
+function rebootlibvirtd {
+		/etc/init.d/libvirtd stop ;
+   	 	sleep 10
+		rm -rf /var/run/libvirt/libvirt-sock-ro ; 
+		rm -rf /var/run/libvirt/libvirt-sock ;
+		sleep 3 ; 
+		/etc/init.d/libvirtd start ; 
+}
+changeuuid
+
+
