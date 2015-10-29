@@ -1,0 +1,11 @@
+ipaddr=68.16.213.32
+service   rpcbind start
+service   nfslock start
+service   nfs     start
+chkconfig rpcbind on
+chkconfig nfslock on
+chkconfig nfs     on
+mkdir -p /datas/nfs
+chmod 777 /datas/nfs
+echo "/datas/nfs *(rw,no_root_squash,no_all_squash,sync)" > /etc/exports
+exportfs -arv 

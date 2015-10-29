@@ -1,0 +1,14 @@
+service rpcbind start
+chkconfig rpcbind on
+service nfslock start
+chkconfig nfslock on
+
+sleep 2
+nfsip=68.16.213.32
+nfspath="/datas/nfs"
+mkdir -p /var/lib/nova/instances/
+mount -t nfs $nfsip:$nfspath /var/lib/nova/instances/
+sleep 2
+echo "mount -t nfs $nfsip:$nfspath /var/lib/nova/instances/">> /etc/rc.d/rc.local
+
+df -h
