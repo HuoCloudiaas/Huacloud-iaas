@@ -1,0 +1,19 @@
+serverIP=68.16.213.32
+./Run.py  stop   mysql  $serverIP  master
+./Run.py  stop   rabbitmq  $serverIP  master
+./Run.py  stop   cml-api  $serverIP  cml-api
+./Run.py  stop   cml-s  $serverIP  cml-s
+./Run.py  stop   cml-p  $serverIP  cml-p
+./Run.py  stop   cml-a  $serverIP  cml-a
+./Run.py  stop   keystone  $serverIP  cc
+./Run.py  stop   glance  $serverIP  cc
+./Run.py  stop   cinder  $serverIP  cc
+./Run.py  stop   nova  $serverIP  cc
+./Run.py  stop   neutron  $serverIP  cc
+./Run.py  stop   neutron  $serverIP  nw
+./Run.py  stop   redis  $serverIP  none
+./Run.py  stop   nebula  $serverIP  none
+./Run.py  stop   nginx  $serverIP  none
+./Run.py  stop mongodb  $serverIP  none
+./Run.py  stop ceilometer $serverIP  cc
+

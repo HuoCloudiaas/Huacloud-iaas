@@ -1,0 +1,5 @@
+serverIP=68.16.213.33
+./Run.py  stop  neutron  $serverIP  nn
+./Run.py  stop  nova  $serverIP  nn
+./Run.py  stop   cml-a  $serverIP  cml-a
+

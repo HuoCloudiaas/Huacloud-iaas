@@ -1,0 +1,5 @@
+serverIP=68.16.213.33
+./Run.py  start   cml-a  $serverIP  cml-a
+./Run.py  start   nova  $serverIP  nn
+./Run.py  start   neutron  $serverIP  nn
+./Run.py  start   ceilometer $serverIP  nn

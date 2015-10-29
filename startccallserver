@@ -1,0 +1,19 @@
+serverIP=68.16.213.32
+./Run.py  start   mysql  $serverIP  master
+./Run.py  start   rabbitmq  $serverIP  master
+./Run.py  start   cml-api  $serverIP  cml-api
+./Run.py  start   cml-s  $serverIP  cml-s
+./Run.py  start   cml-p  $serverIP  cml-p
+./Run.py  start   cml-a  $serverIP  cml-a
+./Run.py  start   keystone  $serverIP  cc
+./Run.py  start   glance  $serverIP  cc
+./Run.py  start   cinder  $serverIP  cc
+./Run.py  start   nova  $serverIP  cc
+./Run.py  start   neutron  $serverIP  cc
+./Run.py  start   neutron  $serverIP  nw
+./Run.py  start   redis  $serverIP  none
+./Run.py  start   nebula  $serverIP  none
+./Run.py  start   nginx  $serverIP  none
+./Run.py  start mongodb  $serverIP  none
+./Run.py  start ceilometer $serverIP  cc
+
