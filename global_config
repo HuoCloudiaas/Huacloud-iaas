@@ -1,0 +1,184 @@
+######## 主机名配置
+
+######### 主机/etc/hosts 的管理
+[hosts_yaml]
+## 存在HOSTS关系的主机
+# <完整主机名>; <IP地址> <虚拟类型>
+#   虚拟类型:
+#     - kvm 该计算节点为虚拟化kvm (缺省值)
+#     - vmware_proxy 该计算节点作为连接vmware vcenter的代理
+hosts:
+  cc.huacloud.demo: 68.16.213.32
+  nn1.huacloud.demo: 68.16.213.33
+
+## 需要移除的主机
+absent_hosts:
+# example:
+# nn10.huacloud: 192.168.26.251
+
+
+######## 产品配置文件
+[products]
+
+# 计算控制节点
+GLOBAL_CC_IP = 68.16.213.32
+
+# 网络控制节点
+GLOBAL_NW_IP = 68.16.213.32
+
+## 内网VNC地址
+GLOBAL_VNC_IP = 68.16.213.32
+
+## 外网VNC地址
+# 如没有VNC外网访问的IP地址，请配置的IP地址，和 GLOBAL_VNC_IP 一致
+# 在既配置了内网VNC地址，又配了外网VNC地址的情况下：从内网访问VNC可能会导致失败。
+GLOBAL_VNC_PUBLIC_IP_PORT = 68.16.213.32:6080
+
+#### IaaS门户配置 ####
+# 门户IP地址
+GLOBAL_IAAS_PORTAL_IP=68.16.213.32
+# 门户前端端口
+GLOBAL_IAAS_PORTAL_PORT=80
+# 门户后端起始端口
+GLOBAL_IAAS_BACKEND_START_PORT=9527
+# 门户后端端口总数
+GLOBAL_IAAS_BACKEND_START_COUNT=4
+
+## 区域配置
+# 门户上默认显示的区域
+GLOBAL_DEFAULT_REGION_NAME=default
+# 多区域配置
+#   Example
+#     单个region:
+#       GLOBAL_REGION={"default":"http://门户IP"}
+#     多个region:
+#       GLOBAL_REGION={"成都":"http://成都门户IP", "上海":"http://上海门户IP"}
+GLOBAL_REGIONS={"default":"http://68.16.213.32"}
+
+## 对接 neteagle 的配置
+# 配置True表示启用 neteagle 的对接
+GLOBAL_NETEAGLE_ACTIVE=False
+# neteagle 的访问地址
+GLOBAL_NETEAGLE_URL=http://127.0.0.1/
+
+
+#### 监控配置 ####
+GLOBAL_CML_API_IP_PORT = 68.16.213.32:8484
+GLOBAL_CML_PROXY_IP = 68.16.213.32
+GLOBAL_CML_SERVER_IP = 68.16.213.32
+
+
+#### Nova 选项 ####
+## 虚拟组件
+GLOBAL_NOVA_VIRTUALIZATION_API = libvirt
+## 虚机IO的读写是否通过 GlusterFS API 来完成。
+#  参数：False 表示不启用该功能
+#        True  表示启用该功能
+#  通常在未特定的要求下，不要启用该功能。使得IaaS的适应性更强
+GLOBAL_NOVA_GLUSTERFS_API_ENABLE = False
+
+
+#### Neutron 选项 ####
+## vlan模式
+GLOBAL_NEUTRON_ENABLE_TUNNELING = False
+GLOBAL_NEUTRON_NETWORK_TYPE = vlan,flat
+GLOBAL_NEUTRON_DATA_ETH= eth1
+## 数据出口的网卡
+GLOBAL_NEUTRON_EXTERNAL_ETH= veth3
+
+
+#### Cinder 选项 ####
+# 选择cinder对接共享存储的类型。
+#    对接 GlusterFS         使用 gluster
+#    对接 Vmware Datastore  使用 vmware
+#    对接 Nfs               使用 nfs
+#  在使用混合存储的情况下，使用逗号隔开多个选项
+#    Exam: gluster,vmware,nfs
+GLOBAL_CINDER_VOLUME_BACKENDS = nfs,gluster
+
+# 配置后端存储(GlusterFs)的IP地址
+GLOBAL_CINDER_GLUSTER_VOL_IP = 68.16.213.32:/cinder-vol
+# 配置后端存储(NFS)的IP地址
+GLOBAL_CINDER_NFS_VOL_IP = 68.16.213.32:/datas/nfs
+# 使用 vmware 的存储时，无须进行配置。通信地址会使用vCenter的IP。
+
+
+#### Redis 配置 ####
+GLOBAL_REDIS_IP=68.16.213.32
+GLOBAL_REDIS_PORT=6379
+GLOBAL_REDIS_BIND_ADDR=0.0.0.0
+# IaaS门户使用RedisDB
+GLOBAL_REDIS_IAAS_PORTAL_DB=0
+# IaaS门户任务使用RedisDB
+GLOBAL_REDIS_IAAS_MISSION_DB=1
+
+
+#### DB 配置 ####
+GLOBAL_DB_IP = 68.16.213.32
+GLOBAL_DB_PORT = 3306
+DB_ROOT_PASSWD=openstack
+
+DB_NAME_NOVA = nova
+DB_USER_NOVA = nova
+DB_PASSWD_NOVA = nova
+
+DB_NAME_NEUTRON = neutron
+DB_USER_NEUTRON = neutron
+DB_PASSWD_NEUTRON = neutron
+
+DB_NAME_GLANCE = glance
+DB_USER_GLANCE = glance
+DB_PASSWD_GLANCE = glance
+
+DB_NAME_KEYSTONE = keystone
+DB_USER_KEYSTONE = keystone
+DB_PASSWD_KEYSTONE = keystone
+
+DB_NAME_CINDER = cinder
+DB_USER_CINDER = cinder
+DB_PASSWD_CINDER = cinder
+
+# 监控数据库
+DB_NAME_CML = cml
+DB_USER_CML = cml
+DB_PASSWD_CML = cml
+
+# IaaS门户数据库
+DB_NAME_NEBULA = nebula
+DB_USER_NEBULA = nebula
+DB_PASSWD_NEBULA = nebula
+
+#### RabbitMQ 配置 ####
+GLOBAL_MQ_IP_PORT = 68.16.213.32:5672 
+GLOBAL_MQ_USER = guest
+GLOBAL_MQ_PASSWD = openstack
+
+#### MongoDB 配置 ####
+GLOBAL_MONGO_HOST = 68.16.213.32
+
+#### ceilometer 配置 ####
+GLOBAL_CEILOMETER_HOST = 68.16.213.32:8777
+
+#### 对接 VMware vCenter 或 ESXI 配置 ####
+# 主机地址
+#GLOBAL_VMWARE_HOST = 192.168.26.250
+# 登录用户名
+#GLOBAL_VMWARE_USERNAME = spd\administrator
+# 用户密码
+#GLOBAL_VMWARE_PASSWORD =!QAZ2wsx
+# vCenter集群，多个集群用,(逗号)分隔
+#GLOBAL_VMWARE_CLUSTER_NAME = cluster_vm1
+# 匹配datastore的正则表达式
+#GLOBAL_VMWARE_DATASTORE = datastore*
+
+######## 其他配置选项
+[others]
+# 运行 ./Run.py 命令时，就生成所有产品的配置文件
+IS_GENERATE_ALL_CONFIG = False
+
+# 配置为 True 时，表示程序处于调试阶段，仅输出部署命令，并不执行部署操作。
+IS_TEST = False
+
+# 配置为 True 时，表示部署nn节点完毕后，将该nn节点上的“nova-compute”服务，置于“disable”。
+# 该功能主要用于门户在对部署完毕的计算节点后，将进行管控前时，需要“nova-compute”服务为“disable”。
+IS_DISABLE_NOVA_COMPUTE_AFTER_DEPLOYED = True

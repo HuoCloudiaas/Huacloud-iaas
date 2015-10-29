@@ -1,0 +1,82 @@
+WORKSPACE=/opt/autodeploy/tools/storage_tools
+
+#### 文件系统格式化配置
+# 目前支持 xfs 和 ext4
+formatType=xfs
+mkfs_inode=512
+format_ext4_params="-I ${mkfs_inode}"
+format_xfs_params="-i size=${mkfs_inode}"
+# 配置为"True"，则仅安装xfs，不进行格式化
+isInstallOnly=False
+
+#### 共享存储的配置
+# 使用本地硬盘时配置如下：
+#   storage_dev=/dev/mapper/vg_data-lvdata
+#   mnt_dev2path=/datas/local
+# 使用IP-SAN，FC-SAN时配置如下：
+#   storage_dev=<设备地址>，example: /dev/sdc
+#   mnt_dev2path=/datas/mnt
+storage_dev=/dev/mapper/vg_data-lvdata
+mnt_dev2path=/datas/local
+
+## 共享存储Gluster的配置（每个节点如下配置）
+storageType=glusterfs
+
+#### 集群的配置（包含GlusterFS客户端和服务端的配置）
+# 使用空格分隔 <主机名> <加入GlusterFS服务集群标识> <存储IP地址> <子网掩码> <网卡设备名称> <存储角色>
+# <主机名>：
+#    为该服务器的主机名
+# <加入GlusterFS服务集群标识>：
+#    join 表示加入集群 ；no 表示不加入,仅作为集群的客户端
+# <存储IP地址>
+#    为存储网段的IP地址。在未规划存储网段的条件下，可复用管理网口。即：使用已配置的管理网络地址。
+#    但会这影响到管理网络性能。
+# <子网掩码>
+#　　略
+# <网卡设备名称>
+#    该网络使用的网卡设备
+# <存储角色>
+#    存储角色分为"cc"和"nn"
+#
+#备注：数组的顺序，将直接影响到创建集群间成员的顺序。
+
+glusterCluster=(
+[0]="cc.huacloud.demo  join   68.16.213.32 255.255.255.0 veth0 cc"
+[1]="nn1.huacloud.demo join   68.16.213.33 255.255.255.0 veth0 nn"
+)
+
+# 数据冗余
+#   replica_count=1时，表示集群中仅包含1份数据，数据冗余为0
+#   replica_count=2时，表示集群中额外复制1份数据，数据冗余为1
+replica_count=2
+
+# glusterfs卷 和 brick的路径设置
+nova_vol_name=nova-vol
+cinder_vol_name=cinder-vol
+glusterfsDir=$mnt_dev2path/glusterfs
+nova_vol_brick_path=$glusterfsDir/$nova_vol_name/brick1
+cinder_vol_brick_path=$glusterfsDir/$cinder_vol_name/brick1
+
+novaInstancePath="/var/lib/nova/instances"
+glanceImagePath="/var/lib/glance/images"
+
+# glusterfs卷的优化
+optimizeGlusterVol=(
+[0]="performance.io-thread-count 64"
+[1]="network.remote-dio enable     "
+[2]="cluster.eager-lock enable     "
+[3]="performance.stat-prefetch off "
+[4]="performance.io-cache off      "
+[5]="performance.read-ahead off    "
+[6]="performance.quick-read off    "
+# 配置GlusterFS API选项
+[7]="server.allow-insecure on      "
+)
+
+## cgconfig的配置
+# 内存资源的设置（单位字节）：生产环境推荐 16G，即 "17179869184"
+# 演示环境或者服务器资源匮乏时，请设置为"0"
+memory_limit_in_bytes="0"
+# CPU数的设置：生产环境推荐设置 "0-3"
+# 演示环境或者服务器资源匮乏时，请设置为 "0"
+cpuset_cpus="0"
