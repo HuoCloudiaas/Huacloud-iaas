@@ -1,0 +1,49 @@
+#1.实现ssh自动登录完成任务的expect脚本
+
+#!/usr/bin/expect -f
+
+set ipaddress [lindex $argv 0]
+
+set passwd [lindex $argv 1]
+
+set timeout 30
+
+spawn ssh test@$ipaddress
+
+expect {
+
+"yes/no" { send "yes\r";exp_continue }
+
+"password:" { send "$passwd\r" }
+
+}
+
+expect "*from*"
+
+send "mkdir -p ./tmp/guo\r"
+
+#send "exit\r"
+
+expect "#"  命令运行完, 你要期待一个结果, 结果就是返回shell提示符了(是# 或者$)
+
+#最后一句第13行的解释：
+
+ 
+
+#其实写成 interact 的最大好处是登录后不会退出，而会一直保持会话连接，可以后续手动处理其它任务，请根据实际情况自行选择了。
+
+ 
+
+#2.调用login.exp完成批量管理
+
+#!/bin/bash
+
+#for i in `awk '{print $1}' passwd.txt`
+
+#do
+
+#j=`awk -v I="$i" '{if(I==$1)print $2}' passwd.txt`
+
+#expect /root/shell/login.exp $i $j
+
+#done
