@@ -1,0 +1,69 @@
+
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#问题原因，解决方式及目的描述 
+ 1230 版本在测试过程中发现没有装载NBD模块，这样在启动基于glusterfs cinder volume的QCOW2虚拟机时
+ openstack 无法通过qemu-nbd 注入实例所需要修改的信息，并引发一系列功能问题（比如虚拟机无法更改分区大小，
+ 无法通过注入inject设计ip mac等），并在日志中报错
+ NBD(Network Block Device)让你可以将一个远程主机的磁盘空间,当作一个块设备来使用。
+ 
+ 在原生的openstack 中， 主要的注入工作包括：
+  
+  1. 注入ssh密钥
+
+创建密钥(ssh-keygen)，添加密钥对；
+nova keypair-add --pub_key.ssh/id_rsa.pub mykey
+创建实例的时候注入密钥；
+nova boot --key_name mykey --imageid_of_image --flavor 1 name_of_instance
+注：id_of_image可以通过nova image-list取得；
+  2. 注入文件
+假如我要注入.vimrc这个文件到新创建的实例中，可以：
+nova boot --file /root/.vimrc=/root/.vimrc--image id_of_image --flavor 1 name_of_instance
+注：可以注入多个文件（最多5个），只要写多个--file；
+ 3 . 
+   注入元数据
+可以通过--meta给实例中传入键值对，注入后会写在/meta.js文件里，以类似python字典的方式存储在虚拟机的/meta.js文件中；
+nova boot --meta key2=value2 --metakey1=value1 --image id_of_image --flavor 1 name_of_instance
+cat /meta.js
+{＂key2″: “value2″,“key1″: “value1″}
+}
+!EOF!
+
+# 下面开始正式脚本文件
+set –x    #任何参数都会显示
+set -e    # 执行结果不是true则应该退出。
+#set -o verbose #打印读入shell的输入行。
+set -o xtrace  #执行命令之前打印命令
+temp_dir=`mktemp`; rm -rf $temp_dir; mkdir -p $temp_dir    # 创建随机名称的临时文件路径
+TOPDIR=$(cd $(dirname "$0") && pwd)                        # 设定相对目录为当前文件夹上级目录 
+#首先获取内核版本，同时也将是原有内核的编译目录名称
+uname -r  
+安装内核编译所需环境
+cd $TOPDIR
+rpm -ivh  kernel-devel kernel-headers
+rpm -ihv kernel-2.6.32-358.123.4.openstack.el6.src.rpm
+cd ~/rpmbuild/SOURCES
+tar jxvf linux-2.6.32-358.123.4.openstack.el6.tar.bz2 -C /usr/src/kernels/
+cd /usr/src/kernels/
+mv $(uname -r) $(uname -r)-old
+mv linux-2.6.32-358.123.4.openstack.el6 $(uname -r)
+cd $(uname -r)
+make mrproper
+cp ../$(uname -r)-old/Module.symvers ./
+cp /boot/config-$(uname -r) ./.config
+make oldconfig
+make prepare
+make scripts
+make CONFIG_BLK_DEV_NBD=m M=drivers/block
+cp drivers/block/nbd.ko /lib/modules/$(uname -r)/kernel/drivers/block/
+depmod -a
+modprobe nbd max_part=63
