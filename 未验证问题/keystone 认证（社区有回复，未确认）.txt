@@ -1,0 +1,46 @@
+keystone 包含警告信息：
+RNING keystone.openstack.common.versionutils [-] Deprecated: keystone.middleware.core.XmlBodyMiddleware is deprecated as of Icehouse in favor of support for "application/json" only and may be removed in K.
+
+查看os 管理员 用户 角色 租户信息都在。
+[root@cc ~]# keystone role-list
++----------------------------------+----------------------+
+|                id                |         name         |
++----------------------------------+----------------------+
+| 352065ab1a6c4678b12941c262a0c84f |    KeystoneAdmin     |
+| a03d0697a39a47bb977a1394008dd6cb | KeystoneServiceAdmin |
+| df174d7c92f84ce0b16249a2037fd84e |        Member        |
+| fb0dc1e41ef94adb9220ec09f55d3ce6 |    ResellerAdmin     |
+| 9fe2ff9ee4384b1894a90878d3e92bab |       _member_       |
+| bd277c23a5214cfe97726ab26de98880 |        admin         |
++----------------------------------+----------------------+
+[root@cc ~]# keystone user-role-list
++----------------------------------+----------------------+----------------------------------+----------------------------------+
+|                id                |         name         |             user_id              |            tenant_id             |
++----------------------------------+----------------------+----------------------------------+----------------------------------+
+| 352065ab1a6c4678b12941c262a0c84f |    KeystoneAdmin     | c25e7d585fdf4b05949d0e09c8bfc50f | b4fe3c6674544844ba5014dababc455b |
+| a03d0697a39a47bb977a1394008dd6cb | KeystoneServiceAdmin | c25e7d585fdf4b05949d0e09c8bfc50f | b4fe3c6674544844ba5014dababc455b |
+| bd277c23a5214cfe97726ab26de98880 |        admin         | c25e7d585fdf4b05949d0e09c8bfc50f | b4fe3c6674544844ba5014dababc455b |
++----------------------------------+----------------------+----------------------------------+----------------------------------+
+[root@cc ~]# keystone user-list
++----------------------------------+------------+---------+-----------------------+
+|                id                |    name    | enabled |         email         |
++----------------------------------+------------+---------+-----------------------+
+| c25e7d585fdf4b05949d0e09c8bfc50f |   admin    |   True  |    admin@domain.com   |
+| b732ee2e88ca45e8a78c83259eb2dbb7 | ceilometer |   True  | ceilometer@domain.com |
+| 18eee8234d0a436488681aae78e27677 |   cinder   |   True  |   cinder@domain.com   |
+| 8f2e32619e404c46b8c14e3a0d841643 |   glance   |   True  |   glance@domain.com   |
+| b15647b93704495b9910eff81f6cfd2b |  neutron   |   True  |   neutron@domain.com  |
+| acbb081a052a40098e25b7bb11989273 |    nova    |   True  |    nova@domain.com    |
++----------------------------------+------------+---------+-----------------------+
+
+社区有回复的问题原因如下：但还没有搭建环境确认
+
+I think that as you set up both auth method, it is using the first one (as more general). If you unset OS_SERVICE_TOKEN and OS_SERVICE_ENDPOINT, sourcing the rc file again, I think you could give commands as admin user using rc file credentials.
+
+This is not a major issue..unset your environmental variables OS_SERVICE_TOKEN and OS_SERVICE_ENDPOINT
+
+Source your admin-openrc.sh file which contains your openstack credentials.
+
+Edit the /etc/keystone/keystone-paste.ini file and remove admin_token_auth from the [pipeline:public_api], [pipeline:admin_api], and [pipeline:api_v3] sections.
+
+Restart your identity service..
