@@ -1,0 +1,30 @@
+# 此测试基于nfs共享
+
+#迁移问题说明
+
+从Nebula迁移 ，在nebula 显示迁移成功，但实例发现还在原先设备。
+发现1230版本libvirtd 为自编译版本（非系统原生），更改libvirtd 及 nova 配置文件如下
+
+具体测试及变更步骤如下：
+
+ 配置libvirt 及nova 支持自动迁移 
+
+ vi /opt/server/nova/conf/etc/nova.conf  添加
+
+ live_migration_flag=VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_TUNNELLED
+
+
+ vi /usr/local/libvirt/etc/libvirt/libvirtd.conf  反注释
+->Edit 
+listen_tls = 0
+listen_tcp = 1
+auth_tcp = "none"
+
+ vi /usr/local/libvirt/etc/sysconfig/libvirtd  更改
+LIBVIRTD_ARGS="–listen"
+
+重启启动所有服务 ，从autodeploy
+live_migration_flag=VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE
+
+
+在NFS模式下测试成功，配置文件见同文件夹

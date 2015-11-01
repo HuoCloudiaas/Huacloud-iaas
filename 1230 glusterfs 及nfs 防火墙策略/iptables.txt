@@ -1,0 +1,25 @@
+#!/bin/bash
+#启动glusterfs 的防火墙规则
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 111 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 24007 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 24008 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 24009 -j ACCEPT
+iptables  -A INPUT -m state --state NEW -m tcp -p tcp --dport 24010 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 24011 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 38465:38469 -j ACCEPT
+
+#nfs 防火墙规则
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 111 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 875 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 2049 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p udp --dport 111 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p udp --dport 875 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 892 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p udp --dport 892 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 32769 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p udp --dport 32769 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p tcp --dport 32803 -j ACCEPT
+iptables -I INPUT -s 0.0.0.0/0 -p udp --dport 32803 -j ACCEPT
+
+/etc/init.d/iptables save
+sudo service iptables restart

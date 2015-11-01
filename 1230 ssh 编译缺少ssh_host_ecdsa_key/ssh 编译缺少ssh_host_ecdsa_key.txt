@@ -1,0 +1,7 @@
+sudo /bin/rm -v /etc/ssh/ssh_host__*
+
+ssh-keygen -t rsa1 -f ssh_host_key -N ""
+ssh-keygen -t rsa -f ssh_host_rsa_key -N "" 
+ssh-keygen -t dsa -f ssh_host_dsa_key -N ""  
+ssh-keygen -t dsa -f ssh_host_ecdsa_key -N "" 
+ssh-keygen -t dsa -f ssh_host_ed25519_key -N ""
