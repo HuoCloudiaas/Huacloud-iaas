@@ -1,0 +1,4 @@
+关闭glusterfs 的nfs服务 
+gluster volume set  nova-vol nfs.disable true
+
+gluster volume set cinder-vol nfs.disable true
