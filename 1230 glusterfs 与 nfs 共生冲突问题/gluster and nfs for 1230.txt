@@ -1,4 +1,21 @@
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#解决方式及目的描述 
 关闭glusterfs 的nfs服务 
+在glusterfs及nfs 共生的情况下, glusterFS自带的nfs服务与系统nfs服务冲突，
+需要在每个glusterfs的卷下关闭nfs 
+}
+!EOF!
+
 gluster volume set  nova-vol nfs.disable true
 
 gluster volume set cinder-vol nfs.disable true

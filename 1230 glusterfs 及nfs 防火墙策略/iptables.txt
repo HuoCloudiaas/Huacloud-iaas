@@ -1,4 +1,18 @@
-#!/bin/bash
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#解决方式及目的描述 
+为1230版本加入glusterfs 及 nfs 服务的防火墙规则
+}
+!EOF!
 #启动glusterfs 的防火墙规则
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 111 -j ACCEPT
 iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 24007 -j ACCEPT

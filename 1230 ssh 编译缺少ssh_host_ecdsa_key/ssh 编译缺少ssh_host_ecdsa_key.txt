@@ -1,3 +1,24 @@
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#问题原因及说明
+在重新启动sshd服务或物理服务器时发现报错 ，没有/etc/ssh/ssh_host_ecdsa_key.pub 文件。
+原因： 没有用系统原生的SSH服务在编译时没有生成key
+解决办法
+1 ， 手工touch 该文件，报错信息不再提示
+2. 删除原有key文件，重新在编译目录生成。但看了源码，编译完SSH 服务，COPY 启动文件后有毕后会删除目录动作，
+只有使用命令在touch文件后重新生成（待测试）
+
+}
+!EOF!
 sudo /bin/rm -v /etc/ssh/ssh_host__*
 
 ssh-keygen -t rsa1 -f ssh_host_key -N ""
