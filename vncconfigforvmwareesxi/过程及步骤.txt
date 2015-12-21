@@ -1,0 +1,14 @@
+1. 将vncforhuacloudiaas.xml 配置文件放置在esxi主机的存储路径下：例 /vmfs/volumes/datastore1/vncbackrecovery/vncforhuacloudiaas.xml
+2. 在esxi 主机/etc/rc.local 文件内末尾添加如下两行，使esxi启动时自动添加新防火墙脚色并生效。
+
+cp /vmfs/volumes/datastore1/vncbackrecovery/vncforhuacloud.xml /etc/vmware/firewall/
+esxcli network firewall refresh
+
+注意， 在修改rc.local 时需要先添加权限，完成后改回。
+添加：
+chmod +t /etc/rc.local
+chmod 644 /etc/rc.local
+
+改回：
+chmod -t /etc/rc.local
+chmod 0555 /etc/rc.local

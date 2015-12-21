@@ -1,0 +1,46 @@
+#!/bin/bash 
+
+##############################################################################
+#Copyright HuaCloud Inc.
+# This program isn't  free software: but you can redistribute it and/or modify
+# it when you deploy Huacloud iaas product for 1230 version.
+###########################################################################
+#
+:<<!EOF!
+function illustration{
+
+#解决方式及目的描述 
+脚本上的检查所有IAAS环境中主机分区使用率是否超过预设值，
+使用说明：
+1 \ 需要在脚本目录下使用hostiplist文件列出所有需要检查的主机IP
+2. 使用$标识硬盘预设百分比
+}
+!EOF!
+
+set -e
+set	-o xtrace
+temp_dir=`mktemp`; rm -rf $temp_dir; mkdir -p $temp_dir
+TOPDIR=$(cd $(dirname "$0") && pwd)
+watch_percent=$1
+cchost=$2
+
+function diskusage () {
+	for diskgtsize in `df -h |sed -n '2,8p'|awk '{print $5}' |sed 's/%//g'` ; do 
+     if [ $diskgtsize -gt $watch_percent ];then
+     	echo $diskgtsize%  
+     	echo `hostname` 磁盘有分区已经大于$watch_percent , 请注意
+     elif [[ $diskgtsize -lt $watch_percent ]]; then
+     	 echo `hostname` 硬盘分区没有大于$watch_percent
+     fi
+     	done
+}
+ sed -i "s/^watch_percent=.*/watch_percent=$watch_percent/g" $TOPDIR/diskusage
+
+for i in `cat $TOPDIR/nodeiplist` ; do
+	ssh root@$i  "ip addr | grep inet | grep brd 
+	hostname
+	scp root@$cchost:$TOPDIR/diskusage /root/
+	bash -l -c  /root/diskusage $1 
+	hostname "
+done
+

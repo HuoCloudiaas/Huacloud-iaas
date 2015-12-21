@@ -1,0 +1,16 @@
+#!/bin/bash
+#set -e
+#set	-o xtrace
+watch_percent=25
+function diskusage () {
+	for diskgtsize in `df -h |sed -n '2,8p'|awk '{print $5}' |sed 's/%//g'` ; do 
+     if [ $diskgtsize -gt $watch_percent ]; then
+     	echo $diskgtsize%  
+     	echo `hostname` 磁盘有分区已经大于$watch_percent
+	break
+     elif [[ $diskgtsize -lt $watch_percent ]]; then
+     	 echo `hostname` 硬盘分区没有大于$watch_percent
+     fi
+     	done
+}
+diskusage
